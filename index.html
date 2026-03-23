@@ -23,12 +23,16 @@
       max-width: 100%;
       max-height: 100%;
       object-fit: contain;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
   <img id="pet" alt="Random cat or dog image">
   <script>
+    const CLICK_COOLDOWN_MS = 500;
+    let lastClickAdvanceAt = 0;
+
     async function updatePet() {
       const pet = document.getElementById('pet');
       if (Math.random() < 0.5) {
@@ -44,8 +48,20 @@
         pet.src = 'https://cataas.com/cat?t=' + Date.now();
       }
     }
+
+    function advancePetOnClick() {
+      const now = Date.now();
+      if (now - lastClickAdvanceAt < CLICK_COOLDOWN_MS) {
+        return;
+      }
+
+      lastClickAdvanceAt = now;
+      updatePet();
+    }
+
     updatePet();
     setInterval(updatePet, 5000);
+    document.getElementById('pet').addEventListener('click', advancePetOnClick);
   </script>
 </body>
 </html>
