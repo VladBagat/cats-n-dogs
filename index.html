@@ -31,31 +31,64 @@
   <img id="pet" alt="Random cat or dog image">
   <script>
     const CLICK_COOLDOWN_MS = 500;
-    let lastClickAdvanceAt = 0;
+    let lastClickAdvancedAt = 0;
+    let isUpdatingPet = false;
+
+    function setPetSource(pet, source) {
+      return new Promise((resolve) => {
+        const clearHandlers = () => {
+          pet.onload = null;
+          pet.onerror = null;
+        };
+
+        pet.onload = () => {
+          clearHandlers();
+          resolve();
+        };
+
+        pet.onerror = () => {
+          clearHandlers();
+          resolve();
+        };
+
+        pet.src = source;
+      });
+    }
 
     async function updatePet() {
-      const pet = document.getElementById('pet');
-      if (Math.random() < 0.5) {
-        pet.src = 'https://cataas.com/cat?t=' + Date.now();
+      if (isUpdatingPet) {
         return;
       }
 
+      isUpdatingPet = true;
+      const pet = document.getElementById('pet');
+
       try {
-        const response = await fetch('https://dog.ceo/api/breeds/image/random');
-        const data = await response.json();
-        pet.src = data.message;
+        if (Math.random() < 0.5) {
+          await setPetSource(pet, 'https://cataas.com/cat?t=' + Date.now());
+        } else {
+          const response = await fetch('https://dog.ceo/api/breeds/image/random');
+          const data = await response.json();
+          await setPetSource(pet, data.message);
+        }
       } catch (error) {
-        pet.src = 'https://cataas.com/cat?t=' + Date.now();
+        await setPetSource(pet, 'https://cataas.com/cat?t=' + Date.now());
+      } finally {
+        isUpdatingPet = false;
       }
     }
 
     function advancePetOnClick() {
-      const now = Date.now();
-      if (now - lastClickAdvanceAt < CLICK_COOLDOWN_MS) {
+      if (isUpdatingPet) {
         return;
       }
 
-      lastClickAdvanceAt = now;
+      const now = Date.now();
+      if (now - lastClickAdvancedAt < CLICK_COOLDOWN_MS) {
+        return;
+      }
+
+      lastClickAdvancedAt = now;
       updatePet();
     }
 
