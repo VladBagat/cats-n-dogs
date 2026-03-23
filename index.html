@@ -80,6 +80,20 @@
       });
     }
 
+    async function getDogImageUrl(endpoint) {
+      const response = await fetch(endpoint);
+      if (!response.ok) {
+        throw new Error('Dog API request failed');
+      }
+
+      const data = await response.json();
+      if (!data || typeof data.message !== 'string') {
+        throw new Error('Dog API response is invalid');
+      }
+
+      return data.message;
+    }
+
     async function updatePet() {
       if (isUpdatingPet) {
         return;
@@ -91,15 +105,13 @@
 
       try {
         if (showPugsOnly) {
-          const response = await fetch('https://dog.ceo/api/breed/pug/images/random');
-          const data = await response.json();
-          await setPetSource(pet, data.message);
+          const pugImageUrl = await getDogImageUrl('https://dog.ceo/api/breed/pug/images/random');
+          await setPetSource(pet, pugImageUrl);
         } else if (Math.random() < 0.5) {
           await setPetSource(pet, 'https://cataas.com/cat?t=' + Date.now());
         } else {
-          const response = await fetch('https://dog.ceo/api/breeds/image/random');
-          const data = await response.json();
-          await setPetSource(pet, data.message);
+          const dogImageUrl = await getDogImageUrl('https://dog.ceo/api/breeds/image/random');
+          await setPetSource(pet, dogImageUrl);
         }
       } catch (error) {
         if (showPugsOnly) {
