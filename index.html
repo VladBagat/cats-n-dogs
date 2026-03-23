@@ -24,8 +24,10 @@
       top: 16px;
       left: 16px;
       z-index: 1;
+      display: flex;
+      gap: 8px;
     }
-    #pugination {
+    #controls button {
       padding: 10px 14px;
       border: 1px solid #666;
       border-radius: 8px;
@@ -34,7 +36,7 @@
       font: 600 14px/1.2 system-ui, -apple-system, "Segoe UI", sans-serif;
       cursor: pointer;
     }
-    #pugination.on {
+    #controls button.on {
       border-color: #54d169;
       background: #16361d;
       color: #d5f7dc;
@@ -49,6 +51,8 @@
 </head>
 <body>
   <div id="controls">
+    <button id="dogs-only" type="button" aria-pressed="false">Dogs only</button>
+    <button id="cats-only" type="button" aria-pressed="false">Cats only</button>
     <button id="pugination" type="button" aria-pressed="false">Pugination: OFF</button>
   </div>
   <img id="pet" alt="Random cat or dog image">
@@ -58,6 +62,8 @@
     let lastClickAdvancedAt = 0;
     let isUpdatingPet = false;
     let isPuginationOn = false;
+    let onlyDogs = false;
+    let onlyCats = false;
 
     function setPetSource(pet, source) {
       return new Promise((resolve) => {
@@ -94,6 +100,10 @@
       return data.message;
     }
 
+    function getCatImageUrl() {
+      return 'https://cataas.com/cat?t=' + Date.now();
+    }
+
     async function updatePet() {
       if (isUpdatingPet) {
         return;
@@ -107,8 +117,13 @@
         if (showPugsOnly) {
           const pugImageUrl = await getDogImageUrl('https://dog.ceo/api/breed/pug/images/random');
           await setPetSource(pet, pugImageUrl);
+        } else if (onlyDogs) {
+          const dogImageUrl = await getDogImageUrl('https://dog.ceo/api/breeds/image/random');
+          await setPetSource(pet, dogImageUrl);
+        } else if (onlyCats) {
+          await setPetSource(pet, getCatImageUrl());
         } else if (Math.random() < 0.5) {
-          await setPetSource(pet, 'https://cataas.com/cat?t=' + Date.now());
+          await setPetSource(pet, getCatImageUrl());
         } else {
           const dogImageUrl = await getDogImageUrl('https://dog.ceo/api/breeds/image/random');
           await setPetSource(pet, dogImageUrl);
@@ -117,18 +132,24 @@
         if (showPugsOnly) {
           await setPetSource(pet, PUG_FALLBACK_IMAGE);
         } else {
-          await setPetSource(pet, 'https://cataas.com/cat?t=' + Date.now());
+          await setPetSource(pet, getCatImageUrl());
         }
       } finally {
         isUpdatingPet = false;
       }
     }
 
-    function renderPuginationState() {
+    function renderControlsState() {
       const puginationButton = document.getElementById('pugination');
+      const dogsOnlyButton = document.getElementById('dogs-only');
+      const catsOnlyButton = document.getElementById('cats-only');
       puginationButton.classList.toggle('on', isPuginationOn);
       puginationButton.setAttribute('aria-pressed', String(isPuginationOn));
       puginationButton.textContent = isPuginationOn ? 'Pugination: ON' : 'Pugination: OFF';
+      dogsOnlyButton.classList.toggle('on', onlyDogs);
+      dogsOnlyButton.setAttribute('aria-pressed', String(onlyDogs));
+      catsOnlyButton.classList.toggle('on', onlyCats);
+      catsOnlyButton.setAttribute('aria-pressed', String(onlyCats));
     }
 
     function advancePetOnClick() {
@@ -150,9 +171,32 @@
     document.getElementById('pet').addEventListener('click', advancePetOnClick);
     document.getElementById('pugination').addEventListener('click', () => {
       isPuginationOn = !isPuginationOn;
-      renderPuginationState();
+      if (isPuginationOn) {
+        onlyDogs = false;
+        onlyCats = false;
+      }
+      renderControlsState();
       updatePet();
     });
+    document.getElementById('dogs-only').addEventListener('click', () => {
+      onlyDogs = !onlyDogs;
+      onlyCats = false;
+      if (onlyDogs) {
+        isPuginationOn = false;
+      }
+      renderControlsState();
+      updatePet();
+    });
+    document.getElementById('cats-only').addEventListener('click', () => {
+      onlyCats = !onlyCats;
+      onlyDogs = false;
+      if (onlyCats) {
+        isPuginationOn = false;
+      }
+      renderControlsState();
+      updatePet();
+    });
+    renderControlsState();
   </script>
 </body>
 </html>
