@@ -27,6 +27,21 @@
       display: flex;
       gap: 8px;
     }
+    #banner {
+      position: fixed;
+      top: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1;
+      padding: 10px 14px;
+      border: 1px solid #666;
+      border-radius: 8px;
+      background: #1f1f1f;
+      color: #fff;
+      font: 700 14px/1.2 system-ui, -apple-system, "Segoe UI", sans-serif;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
     #controls button {
       padding: 10px 14px;
       border: 1px solid #666;
@@ -50,6 +65,7 @@
   </style>
 </head>
 <body>
+  <header id="banner">Cats and Dogs</header>
   <div id="controls">
     <button id="dogs-only" type="button" aria-pressed="false">Dogs only</button>
     <button id="cats-only" type="button" aria-pressed="false">Cats only</button>
